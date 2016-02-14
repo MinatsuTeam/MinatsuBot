@@ -1,6 +1,7 @@
 package us.tryy3.java.minatsu;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import us.tryy3.java.minatsu.logger.Logger;
 
@@ -98,6 +99,10 @@ public class TCPServer extends Thread {
         private BufferedReader in;
         private PrintWriter out;
         private TCPServer parent;
+        private String name;
+        private String type;
+        private String versionStandard;
+        private String versionListener;
 
         public Connection(Socket socket, UUID uuid, TCPServer parent) {
             this.socket = socket;
@@ -117,14 +122,21 @@ public class TCPServer extends Thread {
                 try {
                     String msg = in.readLine();
 
-                    JsonArray json = new JsonParser().parse(msg).getAsJsonArray();
+                    JsonObject json = new JsonParser().parse(msg).getAsJsonObject();
 
-                    if (json == null || json.size() <= 0) {
+                    if (json == null || !json.has("event")) {
                         logger.severe("Got a TCP request, but the json was invalid.");
                         continue;
                     }
 
-                    bot.read(this, json);
+                    if (json.get("event").getAsString().equalsIgnoreCase("connection")) {
+                        this.name = (json.has("name")) ? json.get("name").getAsString() : "";
+                        this.type = (json.has("type")) ? json.get("type").getAsString() : "";
+                        this.versionStandard = (json.has("versionStandard")) ? json.get("versionStandard").getAsString() : "";
+                        this.versionListener = (json.has("versionListener")) ? json.get("versionListener").getAsString() : "";
+                    } else {
+                        bot.read(this, json);
+                    }
                 } catch (SocketException e) {
                     try {
                         in.close();
@@ -146,6 +158,22 @@ public class TCPServer extends Thread {
             return uuid;
         }
 
+        public String getListenerName() {
+            return name;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getVersionListener() {
+            return versionListener;
+        }
+
+        public String getVersionStandard() {
+            return versionStandard;
+        }
+
         public void sendRaw(String message) {
             out.println(message);
         }
@@ -155,24 +183,34 @@ public class TCPServer extends Thread {
         }
 
         public void sendMessage(JsonArray messages) {
-            JsonArray obj = new JsonArray();
+            System.out.println(messages);
+            JsonObject obj = new JsonObject();
 
-            obj.add("sendMessage");
-            obj.add(messages);
+            obj.addProperty("event", "sendMessage");
+            obj.add("message", messages);
+
+            sendRaw(obj.toString());
+        }
+
+        public void sendMessage(JsonObject message) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("event", "sendMessage");
+            obj.add("message", message);
 
             sendRaw(obj.toString());
         }
         public void sendMessage(String id, String message) {
-            JsonArray writeArgs = new JsonArray();
-            JsonArray msgArgs = new JsonArray();
+            JsonObject obj = new JsonObject();
+            JsonObject msg = new JsonObject();
 
-            msgArgs.add(id);
-            msgArgs.add(message);
+            msg.addProperty("channel", id);
+            msg.addProperty("message", message);
 
-            writeArgs.add("sendMessage");
-            writeArgs.add(msgArgs);
+            obj.addProperty("event", "sendMessage");
+            obj.add("message", msg);
 
-            sendRaw(writeArgs.toString());
+            sendRaw(obj.toString());
         }
 
         public void close() {

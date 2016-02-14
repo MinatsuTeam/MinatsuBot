@@ -1,6 +1,7 @@
 package us.tryy3.java.minatsu;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import us.tryy3.java.minatsu.command.Command;
 import us.tryy3.java.minatsu.command.CommandManager;
 import us.tryy3.java.minatsu.events.Event;
@@ -165,23 +166,19 @@ public class Bot {
         getTcpServer().stopConnection();
     }
 
-    public void read(TCPServer.Connection connection, JsonArray array) {
-        switch (array.get(0).getAsString()) {
-            case "onMessageEvent": {
-                if (array.size() <= 1) {
-                    logger.severe("TCPServer sent message event but no args was sent.");
+    public void read(TCPServer.Connection connection, JsonObject obj) {
+        switch (obj.get("event").getAsString()) {
+            case "chatMessage": {
+                if (!(obj.has("channel")) || !(obj.has("message")) || !(obj.has("from"))) {
+                    logger.severe("TCPServer sent a chatMessage event with invalid args.");
                     return;
                 }
-                JsonArray ja = array.get(1).getAsJsonArray();
-                if (ja.size() < 3) {
-                    logger.severe("TCPServer sent message event but not enough args was sent.");
-                    return;
-                }
-                String msg = ja.get(2).getAsString();
-                String from = ja.get(1).getAsString();
-                String id = ja.get(0).getAsString();
 
-                if (ja.get(2).getAsString().indexOf("!") == 0) {
+                String msg = obj.get("message").getAsString();
+                String from = obj.get("from").getAsString();
+                String id = obj.get("channel").getAsString();
+
+                if (msg.indexOf("!") == 0) {
                     String[] splitmsg = msg.split(" ");
 
                     String command = splitmsg[0].substring(1);
@@ -196,7 +193,7 @@ public class Bot {
                     }
 
                     for (Command cmd : commandManager.getCommands()) {
-                        if (cmd.getName().equals(command)) {
+                        if (cmd.getName().equalsIgnoreCase(command)) {
                             knownCommand = cmd.onCommand(connection, from, id, cmd, command, args);
                             break;
                         } else {
