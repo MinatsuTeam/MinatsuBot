@@ -183,7 +183,6 @@ public class TCPServer extends Thread {
         }
 
         public void sendMessage(JsonArray messages) {
-            System.out.println(messages);
             JsonObject obj = new JsonObject();
 
             obj.addProperty("event", "sendMessage");

@@ -6,10 +6,10 @@ import com.google.gson.JsonObject;
 /**
  * Created by tryy3 on 2016-02-14.
  */
-public class messageBuilder {
+public class MessageBuilder {
     JsonArray array = new JsonArray();
 
-    public messageBuilder addMessage(String channel, String message) {
+    public MessageBuilder addMessage(String channel, String message) {
         JsonObject obj = new JsonObject();
         obj.addProperty("channel", channel);
         obj.addProperty("message", message);
