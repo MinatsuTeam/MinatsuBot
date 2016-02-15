@@ -211,7 +211,7 @@ public class Bot {
                     }
                     break;
                 }
-                getEvent().callEvents(new onChatEvent(msg, from, id));
+                getEvent().callEvents(new onChatEvent(msg, from, id, connection));
                 break;
             }
         }

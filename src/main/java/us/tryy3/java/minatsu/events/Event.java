@@ -2,14 +2,13 @@ package us.tryy3.java.minatsu.events;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by dennis.planting on 11/6/2015.
  */
 public class Event {
-    private Map<Method, Class<?>> registeredEvents = new HashMap<>();
+    private List<EventType> registeredEvents = new ArrayList<>();
 
     public Event() {
 
@@ -21,8 +20,8 @@ public class Event {
         for (int i = 0; i < methods.length; i++) {
             Parameter[] parameters = methods[i].getParameters();
             for (int p = 0; p < parameters.length; p++) {
-                if (parameters[p].getType().equals(Listener.class)) {
-                    registeredEvents.put(methods[i], parameters[p].getType());
+                if (parameters[p].getType().getSuperclass().equals(Event.class)) {
+                    registeredEvents.add(new EventType(methods[i], parameters[p].getType(), listener));
                 }
             }
         }
@@ -30,14 +29,50 @@ public class Event {
 
     public void callEvents(Event event) {
         try {
-            for (Map.Entry<Method, Class<?>> entry : registeredEvents.entrySet()) {
-                if (entry.getValue().equals(event.getClass())) {
-                    entry.getKey().invoke(event);
+            for (EventType types : registeredEvents) {
+                if (types.getType().equals(event.getClass())) {
+                    types.getMethod().invoke(types.getListener(), event);
                 }
             }
         }
         catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private class EventType {
+        Method method;
+        Class<?> type;
+        Listener listener;
+
+        public EventType(Method method, Class<?> type, Listener listener) {
+            this.method = method;
+            this.type = type;
+            this.listener = listener;
+        }
+
+        public Method getMethod() {
+            return method;
+        }
+
+        public Class<?> getType() {
+            return type;
+        }
+
+        public Listener getListener() {
+            return listener;
+        }
+
+        public void setListener(Listener listener) {
+            this.listener = listener;
+        }
+
+        public void setMethod(Method method) {
+            this.method = method;
+        }
+
+        public void setType(Class<?> type) {
+            this.type = type;
         }
     }
 }

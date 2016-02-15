@@ -1,5 +1,7 @@
 package us.tryy3.java.minatsu.events;
 
+import us.tryy3.java.minatsu.TCPServer.Connection;
+
 /**
  * Created by dennis.planting on 11/6/2015.
  */
@@ -7,11 +9,13 @@ public class onChatEvent extends Event {
     private String message;
     private String from;
     private String id;
+    private Connection connection;
 
-    public onChatEvent(String message, String from, String id) {
+    public onChatEvent(String message, String from, String id, Connection connection) {
         this.message = message;
         this.from = from;
         this.id = id;
+        this.connection = connection;
     }
 
     public String getFrom() {
@@ -24,6 +28,10 @@ public class onChatEvent extends Event {
 
     public String getMessage() {
         return message;
+    }
+
+    public Connection getConnection() {
+        return connection;
     }
 
     public void setFrom(String from) {
