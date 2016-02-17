@@ -202,12 +202,14 @@ public class TCPServer extends Thread {
         public void sendMessage(String id, String message) {
             JsonObject obj = new JsonObject();
             JsonObject msg = new JsonObject();
+            JsonArray array = new JsonArray();
 
             msg.addProperty("channel", id);
             msg.addProperty("message", message);
+            array.add(msg);
 
             obj.addProperty("event", "sendMessage");
-            obj.add("message", msg);
+            obj.add("message", array);
 
             sendRaw(obj.toString());
         }
